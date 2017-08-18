@@ -1,10 +1,11 @@
 ﻿function Get-SNMPTreeWalk {
     param (
-        [Parameter(Mandatory)]$ComputerName
+        [Parameter(Mandatory)]$ComputerName,
+        $CommunityString = "public"
     )
 
     $SNMP = new-object -ComObject olePrn.OleSNMP
-    $SNMP.open($ComputerName,"public",2,3000)
+    $SNMP.open($ComputerName,$CommunityString,2,3000)
     $ArrayOfResults = 1..1000 | % {
         $Result = $SNMP.gettree($_)
         if ($Result) {
