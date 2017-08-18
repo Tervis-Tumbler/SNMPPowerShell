@@ -31,3 +31,25 @@ function ConvertFrom-TwoDimensionalArray {
 
     $Object
 }
+
+#Comment by David here: http://powershelldistrict.com/how-to-combine-powershell-objects/
+function Merge-Object {
+    param(
+        [Parameter(Mandatory)][PSCustomObject]$Object1,
+        [Parameter(Mandatory)][PSCustomObject]$Object2
+    )
+
+    $object3 = New-Object -TypeName PSObject
+
+    foreach ( $Property in $Object1.PSObject.Properties) {
+        $arguments += @{$Property.Name = $Property.value}
+
+        $object3 | Add-Member -MemberType NoteProperty -Name $Property.Name -Value $Property.value
+    }
+
+    foreach ( $Property in $Object2.PSObject.Properties) {
+        $object3 | Add-Member -MemberType NoteProperty -Name $Property.Name -Value $Property.value
+    }
+
+    return $object3
+}
