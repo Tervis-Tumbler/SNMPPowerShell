@@ -5,13 +5,15 @@
 
     $SNMP = new-object -ComObject olePrn.OleSNMP
     $SNMP.open($ComputerName,"public",2,3000)
-    1..1000 | % {
+    $ArrayOfResults = 1..1000 | % {
         $Result = $SNMP.gettree($_)
         if ($Result) {
             ConvertFrom-TwoDimensionalArray -Array $Result
         }
     }    
     $SNMP.Close()
+
+    $ArrayOfResults | Merge-Object
 }
 
 
@@ -35,21 +37,18 @@ function ConvertFrom-TwoDimensionalArray {
 #Comment by David here: http://powershelldistrict.com/how-to-combine-powershell-objects/
 function Merge-Object {
     param(
-        [Parameter(Mandatory)][PSCustomObject]$Object1,
-        [Parameter(Mandatory)][PSCustomObject]$Object2
+        [Parameter(Mandatory,ValueFromPipeline)][PSCustomObject]$Object
     )
-
-    $object3 = New-Object -TypeName PSObject
-
-    foreach ( $Property in $Object1.PSObject.Properties) {
-        $arguments += @{$Property.Name = $Property.value}
-
-        $object3 | Add-Member -MemberType NoteProperty -Name $Property.Name -Value $Property.value
+    begin {
+        $MergedObject = New-Object -TypeName PSObject
     }
 
-    foreach ( $Property in $Object2.PSObject.Properties) {
-        $object3 | Add-Member -MemberType NoteProperty -Name $Property.Name -Value $Property.value
+    process {
+        foreach ($Property in $Object.PSObject.Properties) {
+            $MergedObject | Add-Member -MemberType NoteProperty -Name $Property.Name -Value $Property.value
+        }
     }
-
-    return $object3
+    end {
+        $MergedObject
+    }
 }
