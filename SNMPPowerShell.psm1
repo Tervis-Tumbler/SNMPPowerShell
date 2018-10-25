@@ -17,6 +17,26 @@
     $ArrayOfResults | Merge-Object
 }
 
+function Get-SNMPTreeWalkParallel {
+    param (
+        [Parameter(Mandatory)]$ComputerName,
+        $CommunityString = "public"
+    )
+
+    $SNMP = new-object -ComObject olePrn.OleSNMP
+    $SNMP.open($ComputerName,$CommunityString,2,3000)
+    $ArrayOfResults = Start-ParallelWork -Parameters $(1..1000) -ScriptBlock {
+        param ($TreeNumber)
+        $Result = $SNMP.gettree($TreeNumber)
+        if ($Result) {
+            ConvertFrom-TwoDimensionalArray -Array $Result
+        }
+    }    
+    $SNMP.Close()
+
+    $ArrayOfResults | Merge-Object
+}
+
 
 function ConvertFrom-TwoDimensionalArray {
     param (
